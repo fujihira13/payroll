@@ -115,3 +115,4 @@ docker compose exec app composer audit
 ## テスト用DB
 
 自動テストは通常の `payroll` DBではなく `payroll_test` DBを使います。`RefreshDatabase`でテストごとに初期化されるため、開発画面に登録したデータを壊しません。
+# payroll
