@@ -100,6 +100,30 @@ class CompanyAlignmentFeaturesTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'permission@example.test']);
     }
 
+    public function test_employee_login_id_must_be_unique_across_companies(): void
+    {
+        $companyA = Company::create(['code' => 'GLOBAL-A', 'name' => 'A社', 'is_active' => true]);
+        $companyB = Company::create(['code' => 'GLOBAL-B', 'name' => 'B社', 'is_active' => true]);
+        User::factory()->create(['company_id' => $companyA->id, 'login_id' => 'shared001']);
+        $companyManager = User::factory()->create([
+            'company_id' => $companyB->id,
+            'role' => UserRole::Employee,
+            'permission' => UserPermission::CompanyManager,
+        ]);
+
+        $this->actingAs($companyManager)->post('/company/employees', [
+            'employee_number' => 'E100',
+            'login_id' => 'shared001',
+            'name' => '重複ログインID',
+            'email' => 'shared001@example.test',
+            'password' => 'Password1',
+            'permission' => UserPermission::Employee->value,
+            'is_active' => '1',
+        ])->assertSessionHasErrors('login_id');
+
+        $this->assertDatabaseMissing('users', ['email' => 'shared001@example.test']);
+    }
+
     public function test_employee_csv_imports_permission_nine_and_rejects_other_values(): void
     {
         $company = Company::create(['code' => 'CSV', 'name' => 'CSV会社', 'is_active' => true]);

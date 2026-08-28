@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,30 +20,24 @@ class LoginController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'company_code' => ['required', 'string'],
             'login_id' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
-        $company = Company::where('code', $data['company_code'])
-            ->where('is_active', true)->first();
-
-        if (! $company) {
-            return back()->withErrors(['company_code' => '会社コードまたはログイン情報が正しくありません。'])
-                ->onlyInput('company_code', 'login_id');
-        }
-
         $credentials = [
-            'company_id' => $company->id,
+            'role' => UserRole::Employee->value,
             'login_id' => $data['login_id'],
             'password' => $data['password'],
         ];
 
-        $user = User::withTrashed()->where('company_id', $company->id)->where('login_id', $data['login_id'])->first();
+        $user = User::withTrashed()
+            ->where('role', UserRole::Employee)
+            ->where('login_id', $data['login_id'])
+            ->first();
 
         if ($user?->lock_status) {
             return back()->withErrors(['login_id' => 'アカウントがロックされています。社員管理者へ連絡してください。'])
-                ->onlyInput('company_code', 'login_id');
+                ->onlyInput('login_id');
         }
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
@@ -52,8 +46,8 @@ class LoginController extends Controller
                 $user->update(['login_failure_count' => $failureCount, 'lock_status' => $failureCount >= 5]);
             }
 
-            return back()->withErrors(['login_id' => '会社コード、ログインIDまたはパスワードが正しくありません。'])
-                ->onlyInput('company_code', 'login_id');
+            return back()->withErrors(['login_id' => 'ログインIDまたはパスワードが正しくありません。'])
+                ->onlyInput('login_id');
         }
 
         $request->session()->regenerate();

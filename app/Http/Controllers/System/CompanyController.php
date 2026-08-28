@@ -38,7 +38,7 @@ class CompanyController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $adminData = $request->validate([
-            'initial_admin_login_id' => ['required', 'alpha_dash:ascii', 'max:50'],
+            'initial_admin_login_id' => ['required', 'alpha_dash:ascii', 'max:50', Rule::unique('users', 'login_id')],
             'initial_admin_name' => ['required', 'string', 'max:255'],
             'initial_admin_email' => ['required', 'email', 'unique:users,email'],
         ]);

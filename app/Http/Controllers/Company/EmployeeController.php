@@ -147,10 +147,10 @@ class EmployeeController extends Controller
                         throw new RuntimeException(($index + 2).'行目: 新規社員には password が必要です。');
                     }
                     $loginId = $row['login_id'] ?? $row['employee_number'];
-                    $loginOwner = User::where('company_id', $request->user()->company_id)->where('login_id', $loginId)
+                    $loginOwner = User::withTrashed()->where('login_id', $loginId)
                         ->when($employee, fn ($query) => $query->whereKeyNot($employee->id))->exists();
                     if ($loginOwner) {
-                        throw new RuntimeException(($index + 2).'行目: ログインIDは同じ会社内で既に使用されています。');
+                        throw new RuntimeException(($index + 2).'行目: ログインIDは既に使用されています。');
                     }
                     $permission = $this->permissionFromCsv($row, $index);
                     User::updateOrCreate(
@@ -191,7 +191,7 @@ class EmployeeController extends Controller
         $companyId = $request->user()->company_id;
         $data = $request->validate([
             'employee_number' => ['required', 'max:50', Rule::unique('users')->where('company_id', $companyId)->ignore($employee)],
-            'login_id' => ['required', 'alpha_dash:ascii', 'max:50', Rule::unique('users')->where('company_id', $companyId)->ignore($employee)],
+            'login_id' => ['required', 'alpha_dash:ascii', 'max:50', Rule::unique('users')->ignore($employee)],
             'department_id' => ['nullable', Rule::exists('departments', 'id')->where('company_id', $companyId)],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', Rule::unique('users')->ignore($employee)],

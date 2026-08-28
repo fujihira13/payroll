@@ -38,7 +38,7 @@ class SeparatedAuthenticationTest extends TestCase
         $this->get('/manage/companies')->assertRedirect(route('manage.login'));
     }
 
-    public function test_company_user_logs_in_with_company_code_and_login_id(): void
+    public function test_company_user_logs_in_with_globally_unique_login_id(): void
     {
         $company = Company::create(['code' => 'ACME', 'name' => 'Acme', 'is_active' => true]);
         $user = User::factory()->create([
@@ -48,7 +48,9 @@ class SeparatedAuthenticationTest extends TestCase
             'password' => 'Password123',
         ]);
 
-        $this->post('/login', ['company_code' => 'ACME', 'login_id' => 'staff001', 'password' => 'Password123'])
+        $this->get('/login')->assertOk()->assertDontSee('会社コード');
+
+        $this->post('/login', ['login_id' => 'staff001', 'password' => 'Password123'])
             ->assertRedirect(route('dashboard'));
         $this->assertAuthenticatedAs($user);
     }
@@ -59,7 +61,7 @@ class SeparatedAuthenticationTest extends TestCase
         $user = User::factory()->create(['company_id' => $company->id, 'login_id' => 'staff002', 'password' => 'Password123']);
 
         foreach (range(1, 5) as $attempt) {
-            $this->post('/login', ['company_code' => 'LOCK', 'login_id' => 'staff002', 'password' => 'wrong-password']);
+            $this->post('/login', ['login_id' => 'staff002', 'password' => 'wrong-password']);
         }
 
         $this->assertTrue($user->fresh()->lock_status);
