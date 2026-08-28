@@ -6,7 +6,7 @@
 
 | 文書 | 内容 |
 |---|---|
-| [会社システム寄せ 実装計画・変更記録](./COMPANY_ALIGNMENT_IMPLEMENTATION_PLAN.md) | `/manage`分離、社員＋管理者権限、メール・帳票拡張、移行・検証計画 |
+| [会社システム寄せ 実装計画・変更記録](./COMPANY_ALIGNMENT_IMPLEMENTATION_PLAN.md) | `/login/manage`分離、社員＋管理者権限、メール・帳票拡張、移行・検証計画 |
 | [起動・運用・障害対応手順書](./OPERATIONS_GUIDE.md) | 初回起動、通常起動、停止、確認、ログ、代表的な障害対応 |
 | [外部設計書](./EXTERNAL_DESIGN.md) | 画面、権限、業務フロー、CSV・メール・PDF・ヘルスチェック、データ、非機能 |
 | [外部設計書作成見積](./EXTERNAL_DESIGN_ESTIMATE.md) | 外部設計書を作成・レビューするための概算工数 |

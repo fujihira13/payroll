@@ -4,7 +4,7 @@
 
 1. `routes/web.php` — 画面URLと、誰が入れるかを確認する
 2. `app/Enums/UserPermission.php` — 一般社員1、社員管理者9のパーミッションを確認する
-3. `app/Models/Admin.php`と`app/Models/User.php` — `/manage`と`/login`のアカウント分離を確認する
+3. `app/Models/Admin.php`と`app/Models/User.php` — `/login/manage`と`/login`のアカウント分離を確認する
 4. `app/Http/Middleware/EnsureCompanyManager.php` — permission 9以外を管理機能から拒否する仕組みを読む
 5. `database/migrations` — どのデータを保存しているかを読む
 6. 各Controller — 入力を検証し、Modelを操作し、Viewを返す流れを読む
@@ -30,7 +30,7 @@ BladeはLaravel標準のHTMLテンプレートです。`.blade.php`の中では�
 
 ## 認証・パーミッションと会社分離
 
-- システム管理者は`admins`へ保存され、`/manage`からログインして会社・システム管理者・共通テンプレートを扱います。
+- システム管理者は`admins`へ保存され、`/login/manage`からログインして会社・システム管理者・共通テンプレートを扱います。
 - `permission=9`の社員管理者は`/login`からログインし、自社の管理機能を使用します。検索にはログイン中利用者の`company_id`を付けます。
 - `permission=1`の一般社員も`/login`からログインし、明細の`employee_id`が自分自身であることを確認します。
 

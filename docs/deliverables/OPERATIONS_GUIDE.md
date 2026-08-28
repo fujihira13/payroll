@@ -80,7 +80,7 @@ docker compose ps
 
 ### 4.3 ログインとメール
 
-- システム管理者ログイン: <http://localhost:8080/manage>
+- システム管理者ログイン: <http://localhost:8080/login/manage>
 - 社員管理者・一般社員ログイン: <http://localhost:8080/login>
 - 開発メール: <http://localhost:8025>
 

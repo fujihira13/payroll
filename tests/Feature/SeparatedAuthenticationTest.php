@@ -13,7 +13,7 @@ class SeparatedAuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_system_admin_logs_in_from_manage_only(): void
+    public function test_system_admin_logs_in_from_login_manage_only(): void
     {
         $admin = Admin::create([
             'login_id' => 'admin001',
@@ -23,7 +23,10 @@ class SeparatedAuthenticationTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->post('/manage', ['login_id' => 'admin001', 'password' => 'Password123'])
+        $this->get('/login/manage')->assertOk();
+        $this->get('/manage')->assertNotFound();
+
+        $this->post('/login/manage', ['login_id' => 'admin001', 'password' => 'Password123'])
             ->assertRedirect(route('manage.companies.index'));
         $this->assertAuthenticatedAs($admin, 'admin');
     }

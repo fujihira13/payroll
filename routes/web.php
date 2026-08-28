@@ -25,8 +25,8 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('guest:admin')->group(function () {
-    Route::get('/manage', [AdminLoginController::class, 'create'])->name('manage.login');
-    Route::post('/manage', [AdminLoginController::class, 'store'])->middleware('throttle:6,1')->name('manage.login.store');
+    Route::get('/login/manage', [AdminLoginController::class, 'create'])->name('manage.login');
+    Route::post('/login/manage', [AdminLoginController::class, 'store'])->middleware('throttle:6,1')->name('manage.login.store');
 });
 
 Route::middleware('auth:admin')->prefix('manage')->name('manage.')->group(function () {

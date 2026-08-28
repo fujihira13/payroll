@@ -9,7 +9,7 @@ Laravel 11・PHP 8.3・MariaDB・Blade・Dockerで作成した、複数会社対
 
 | 権限 | できること |
 |---|---|
-| システム管理者 | `/manage`から企業、システム管理者、全社共通のベース帳票を管理 |
+| システム管理者 | `/login/manage`からログインし、企業、システム管理者、全社共通のベース帳票を管理 |
 | 社員管理者 | `/login`からログインし、`permission=9`で自社の部署・社員、明細設定、給与、メール、閲覧状況を管理 |
 | 一般社員 | 公開済みの自分の給与明細だけを閲覧、PDF出力、パスワード変更 |
 
@@ -36,7 +36,7 @@ docker compose exec app php artisan payroll:create-system-admin
 3つ目のコマンドで、最初のシステム管理者の氏名・ログインID・パスワードを対話入力します。`DatabaseSeeder`は意図的に空で、サンプルの社員・給与データは入りません。
 
 - 企業利用者ログイン: <http://localhost:8080/login>
-- システム管理者ログイン: <http://localhost:8080/manage>
+- システム管理者ログイン: <http://localhost:8080/login/manage>
 - メール確認（Mailpit）: <http://localhost:8025>
 - ヘルスチェック: <http://localhost:8080/health>
 - MariaDB（ホストから）: `localhost:3307`
@@ -106,7 +106,7 @@ docker compose exec app composer audit
 
 ## 構成
 
-- `app/Models/Admin.php`: `/manage`専用のシステム管理者アカウント
+- `app/Models/Admin.php`: `/login/manage`専用のシステム管理者アカウント
 - `app/Enums`: 旧データ互換ロール、明細状態、項目種別
 - `app/Http/Controllers/System`: システム管理者機能
 - `app/Http/Controllers/Company`: permission 9の社員管理者機能
