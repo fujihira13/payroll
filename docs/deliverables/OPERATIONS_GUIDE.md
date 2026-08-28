@@ -64,6 +64,8 @@ docker compose ps
 
 `app`、`web`、`db`、`scheduler`、`mailpit`が起動していることを確認します。`app`、`web`、`db`は最終的にhealthyになることが正常です。
 
+`permissions`は起動時に`storage`と`bootstrap/cache`の所有者を補正して正常終了する一時サービスです。`docker compose ps -a permissions`で`Exited (0)`なら正常です。`app`と`scheduler`は`www-data`ユーザーで動作するため、通常の`docker compose exec app php artisan ...`でroot所有の実行時ファイルは作成されません。
+
 ### 4.2 ヘルスチェック
 
 ブラウザで <http://localhost:8080/health> を開き、次の形式が返ることを確認します。

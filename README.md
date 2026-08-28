@@ -43,6 +43,8 @@ docker compose exec app php artisan payroll:create-system-admin
 
 停止は `docker compose down` です。DBデータはDocker volumeに残ります。
 
+起動時に`permissions`サービスがLaravelの実行時ディレクトリの所有者を補正し、`app`と`scheduler`は`www-data`ユーザーで動作します。これにより、Artisanコマンドや画面表示で作成されるログ・Bladeキャッシュがroot所有になり、画面が500エラーになることを防ぎます。
+
 DBデータも消して完全に初期化する操作は `docker compose down -v` です。これは復元できないため、必要な場合だけ実行してください。
 
 ## 基本の操作順
