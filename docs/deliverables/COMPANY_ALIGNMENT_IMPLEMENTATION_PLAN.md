@@ -125,7 +125,7 @@
 | マイグレーション | 分離済み`payroll_test`でfresh、追加分down、再upに成功 |
 | PHP構文検査 | 変更対象を含む全PHPファイルで成功 |
 | ルート生成 | PHP 8.3コンテナで75ルートを生成 |
-| 自動テスト | 18件、68アサーション成功 |
+| 自動テスト | 19件、72アサーション成功 |
 | HTTPスモークテスト | `/login/manage`、`/login`、`/health`がHTTP 200 |
 | Dockerサービス | app、web、MariaDB、scheduler、Mailpit起動・ヘルスチェック成功 |
 

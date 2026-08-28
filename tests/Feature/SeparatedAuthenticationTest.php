@@ -29,6 +29,13 @@ class SeparatedAuthenticationTest extends TestCase
         $this->post('/login/manage', ['login_id' => 'admin001', 'password' => 'Password123'])
             ->assertRedirect(route('manage.companies.index'));
         $this->assertAuthenticatedAs($admin, 'admin');
+
+        $this->get('/login/manage')->assertRedirect(route('manage.companies.index'));
+    }
+
+    public function test_unauthenticated_admin_area_redirects_to_system_admin_login(): void
+    {
+        $this->get('/manage/companies')->assertRedirect(route('manage.login'));
     }
 
     public function test_company_user_logs_in_with_company_code_and_login_id(): void
