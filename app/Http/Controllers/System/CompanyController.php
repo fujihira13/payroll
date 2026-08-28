@@ -87,7 +87,6 @@ class CompanyController extends Controller
     {
         return $request->validate([
             'code' => ['required', 'alpha_dash', 'max:30', Rule::unique('companies')->ignore($company)],
-            'login_slug' => ['required', 'alpha_dash:ascii', 'max:60', Rule::unique('companies')->ignore($company)],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],

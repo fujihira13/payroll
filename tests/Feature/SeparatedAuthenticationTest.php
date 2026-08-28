@@ -30,7 +30,7 @@ class SeparatedAuthenticationTest extends TestCase
 
     public function test_company_user_logs_in_with_company_code_and_login_id(): void
     {
-        $company = Company::create(['code' => 'ACME', 'login_slug' => 'acme', 'name' => 'Acme', 'is_active' => true]);
+        $company = Company::create(['code' => 'ACME', 'name' => 'Acme', 'is_active' => true]);
         $user = User::factory()->create([
             'company_id' => $company->id,
             'role' => UserRole::Employee,
@@ -38,21 +38,26 @@ class SeparatedAuthenticationTest extends TestCase
             'password' => 'Password123',
         ]);
 
-        $this->post('/login', ['company_code' => 'acme', 'login_id' => 'staff001', 'password' => 'Password123'])
+        $this->post('/login', ['company_code' => 'ACME', 'login_id' => 'staff001', 'password' => 'Password123'])
             ->assertRedirect(route('dashboard'));
         $this->assertAuthenticatedAs($user);
     }
 
     public function test_company_user_is_locked_after_five_failures(): void
     {
-        $company = Company::create(['code' => 'LOCK', 'login_slug' => 'lock', 'name' => 'Lock', 'is_active' => true]);
+        $company = Company::create(['code' => 'LOCK', 'name' => 'Lock', 'is_active' => true]);
         $user = User::factory()->create(['company_id' => $company->id, 'login_id' => 'staff002', 'password' => 'Password123']);
 
         foreach (range(1, 5) as $attempt) {
-            $this->post('/login', ['company_code' => 'lock', 'login_id' => 'staff002', 'password' => 'wrong-password']);
+            $this->post('/login', ['company_code' => 'LOCK', 'login_id' => 'staff002', 'password' => 'wrong-password']);
         }
 
         $this->assertTrue($user->fresh()->lock_status);
         $this->assertSame(5, $user->fresh()->login_failure_count);
+    }
+
+    public function test_company_specific_login_url_does_not_exist(): void
+    {
+        $this->get('/login/demo')->assertNotFound();
     }
 }

@@ -4,7 +4,6 @@
 <div class="page-header"><div><div class="eyebrow">COMPANY PROFILE</div><h1>{{ $company->exists ? '企業を編集' : '企業を登録' }}</h1></div></div>
 <form class="card" method="post" action="{{ $company->exists ? route('manage.companies.update', $company) : route('manage.companies.store') }}">@csrf @if($company->exists) @method('put') @endif<div class="form-grid">
 <div class="field"><label>企業コード</label><input name="code" value="{{ old('code', $company->code) }}" required></div>
-<div class="field"><label>ログインURL識別子</label><input name="login_slug" value="{{ old('login_slug', $company->login_slug ?? $company->code) }}" required><span class="help">/login/識別子 のURLになります。</span></div>
 <div class="field"><label>企業名</label><input name="name" value="{{ old('name', $company->name) }}" required></div><div class="field"><label>代表メール</label><input name="email" type="email" value="{{ old('email', $company->email) }}"></div>
 <div class="field"><label>電話番号</label><input name="phone" value="{{ old('phone', $company->phone) }}"></div><div class="field field-full"><label>住所</label><textarea name="address">{{ old('address', $company->address) }}</textarea></div>
 <div class="field field-full"><input type="hidden" name="is_active" value="0"><label class="checkbox"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $company->exists ? $company->is_active : true))>この企業を利用可能にする</label></div>

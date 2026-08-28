@@ -12,13 +12,9 @@ use Illuminate\View\View;
 
 class LoginController extends Controller
 {
-    public function create(Request $request): View
+    public function create(): View
     {
-        $companyCode = $request->route('companyCode');
-        $company = $companyCode ? Company::where(fn ($query) => $query
-            ->where('code', $companyCode)->orWhere('login_slug', $companyCode))->firstOrFail() : null;
-
-        return view('auth.login', compact('company'));
+        return view('auth.login');
     }
 
     public function store(Request $request): RedirectResponse
@@ -29,9 +25,7 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $company = Company::where(fn ($query) => $query
-            ->where('code', $data['company_code'])
-            ->orWhere('login_slug', $data['company_code']))
+        $company = Company::where('code', $data['company_code'])
             ->where('is_active', true)->first();
 
         if (! $company) {

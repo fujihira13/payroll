@@ -21,7 +21,6 @@ Route::get('/health', HealthController::class)->name('health');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::get('/login/{companyCode}', [LoginController::class, 'create'])->name('company.login');
     Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:6,1')->name('login.store');
 });
 

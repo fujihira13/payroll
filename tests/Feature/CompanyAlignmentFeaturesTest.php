@@ -55,7 +55,6 @@ class CompanyAlignmentFeaturesTest extends TestCase
 
         $response = $this->actingAs($system, 'admin')->post('/manage/companies', [
             'code' => 'ACME',
-            'login_slug' => 'acme-payroll',
             'name' => 'Acme株式会社',
             'is_active' => '1',
             'initial_admin_login_id' => 'company001',
@@ -66,6 +65,10 @@ class CompanyAlignmentFeaturesTest extends TestCase
         $response->assertRedirect(route('manage.companies.index'))
             ->assertSessionHas('temporary_password', fn ($password) => is_string($password) && strlen($password) === 12);
         $company = Company::where('code', 'ACME')->firstOrFail();
+        $this->actingAs($system, 'admin')->get('/manage/companies')
+            ->assertOk()
+            ->assertSee(route('login'))
+            ->assertDontSee('/login/ACME');
         $this->assertDatabaseHas('users', [
             'company_id' => $company->id,
             'role' => UserRole::Employee->value,
@@ -77,7 +80,7 @@ class CompanyAlignmentFeaturesTest extends TestCase
 
     public function test_employee_permission_only_accepts_one_or_nine(): void
     {
-        $company = Company::create(['code' => 'PERM', 'login_slug' => 'perm', 'name' => '権限会社', 'is_active' => true]);
+        $company = Company::create(['code' => 'PERM', 'name' => '権限会社', 'is_active' => true]);
         $companyAdmin = User::factory()->create([
             'company_id' => $company->id,
             'role' => UserRole::Employee,
@@ -99,7 +102,7 @@ class CompanyAlignmentFeaturesTest extends TestCase
 
     public function test_employee_csv_imports_permission_nine_and_rejects_other_values(): void
     {
-        $company = Company::create(['code' => 'CSV', 'login_slug' => 'csv', 'name' => 'CSV会社', 'is_active' => true]);
+        $company = Company::create(['code' => 'CSV', 'name' => 'CSV会社', 'is_active' => true]);
         $companyManager = User::factory()->create([
             'company_id' => $company->id,
             'role' => UserRole::Employee,
@@ -130,7 +133,7 @@ class CompanyAlignmentFeaturesTest extends TestCase
 
     public function test_company_report_wizard_preserves_the_selected_slot(): void
     {
-        $company = Company::create(['code' => 'WIZARD', 'login_slug' => 'wizard', 'name' => '帳票会社', 'is_active' => true]);
+        $company = Company::create(['code' => 'WIZARD', 'name' => '帳票会社', 'is_active' => true]);
         $companyAdmin = User::factory()->create([
             'company_id' => $company->id,
             'role' => UserRole::Employee,

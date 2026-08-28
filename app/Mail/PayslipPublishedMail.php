@@ -21,7 +21,7 @@ class PayslipPublishedMail extends Mailable
         $replacements = [
             '{employee_name}' => $payslip->employee->name,
             '{target_month}' => $payslip->batch->target_month->format('Y年n月'),
-            '{login_url}' => route('company.login', $payslip->batch->company->loginIdentifier()),
+            '{login_url}' => route('login'),
             '{company_name}' => $payslip->batch->company->name,
             '{department_name}' => $payslip->employee->department?->name ?? '',
             '{login_id}' => $payslip->employee->login_id,

@@ -21,7 +21,7 @@ class EmployeeNoticeMail extends Mailable
             '{department_name}' => $employee->department?->name ?? '',
             '{employee_name}' => $employee->name,
             '{login_id}' => $employee->login_id,
-            '{login_url}' => route('company.login', $employee->company->loginIdentifier()),
+            '{login_url}' => route('login'),
             '{payslip_title}' => '',
             '{payment_date}' => '',
         ];

@@ -57,7 +57,8 @@ class PayslipWorkflowTest extends TestCase
 
         $this->assertSame(PayrollBatchStatus::Published, $batch->fresh()->status);
         $this->assertNotNull($batch->payslips()->first()->notified_at);
-        Mail::assertSent(PayslipPublishedMail::class, fn ($mail) => $mail->hasTo($employee->email));
+        Mail::assertSent(PayslipPublishedMail::class, fn ($mail) => $mail->hasTo($employee->email)
+            && str_contains($mail->messageBody, route('login')));
     }
 
     public function test_employee_can_only_view_published_own_payslip_and_view_is_recorded(): void
