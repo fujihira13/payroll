@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\PayrollBatchStatus;
 use App\Enums\PayslipItemCategory;
+use App\Enums\UserPermission;
 use App\Enums\UserRole;
 use App\Mail\PayslipPublishedMail;
 use App\Models\Company;
@@ -101,7 +102,7 @@ class PayslipWorkflowTest extends TestCase
     private function context(): array
     {
         $company = Company::create(['code' => 'ACME', 'name' => '株式会社Acme', 'is_active' => true]);
-        $admin = User::factory()->create(['company_id' => $company->id, 'role' => UserRole::CompanyAdmin]);
+        $admin = User::factory()->create(['company_id' => $company->id, 'role' => UserRole::Employee, 'permission' => UserPermission::CompanyManager]);
         $employee = User::factory()->create(['company_id' => $company->id, 'role' => UserRole::Employee, 'employee_number' => 'E001']);
         $template = PayslipTemplate::create(['name' => '標準', 'is_active' => true]);
         $setting = CompanyPayslipSetting::create([

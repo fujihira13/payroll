@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserPermission;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,11 +28,15 @@ class UserFactory extends Factory
     {
         return [
             'role' => UserRole::Employee,
+            'permission' => UserPermission::Employee,
+            'login_id' => fake()->unique()->userName(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'is_active' => true,
+            'force_password_change' => false,
+            'lock_status' => false,
             'login_failure_count' => 0,
             'remember_token' => Str::random(10),
         ];

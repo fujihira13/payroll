@@ -11,7 +11,7 @@ class Company extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['code', 'name', 'email', 'phone', 'address', 'is_active'];
+    protected $fillable = ['code', 'login_slug', 'name', 'email', 'phone', 'address', 'is_active'];
 
     protected function casts(): array
     {
@@ -31,5 +31,10 @@ class Company extends Model
     public function payslipSettings(): HasMany
     {
         return $this->hasMany(CompanyPayslipSetting::class);
+    }
+
+    public function loginIdentifier(): string
+    {
+        return $this->login_slug ?: $this->code;
     }
 }

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PayslipTemplateItem extends Model
 {
     protected $fillable = [
-        'payslip_template_id', 'code', 'label', 'category', 'data_type', 'sort_order', 'is_required',
+        'payslip_template_id', 'code', 'label', 'category', 'data_type', 'sort_order', 'slot_code', 'is_required',
     ];
 
     protected function casts(): array

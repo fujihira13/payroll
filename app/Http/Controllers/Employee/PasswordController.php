@@ -23,6 +23,12 @@ class PasswordController extends Controller
         ]);
         $request->user()->update(['password' => $data['password']]);
 
-        return back()->with('success', 'パスワードを変更しました。');
+        $request->user()->update([
+            'force_password_change' => false,
+            'login_failure_count' => 0,
+            'lock_status' => false,
+        ]);
+
+        return redirect()->route('dashboard')->with('success', 'パスワードを変更しました。');
     }
 }

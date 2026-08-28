@@ -11,7 +11,7 @@ class Department extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['company_id', 'code', 'name'];
+    protected $fillable = ['company_id', 'code', 'name', 'name_kana'];
 
     public function company(): BelongsTo
     {

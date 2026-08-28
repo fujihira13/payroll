@@ -6,6 +6,7 @@ use App\Enums\PayrollBatchStatus;
 use App\Http\Controllers\Controller;
 use App\Models\CompanyPayslipSetting;
 use App\Models\PayrollBatch;
+use App\Models\Payslip;
 use App\Services\PayrollCsvImporter;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -74,6 +75,15 @@ class PayrollBatchController extends Controller
         }
 
         return back()->with('success', "{$count}件の給与明細を取り込みました。");
+    }
+
+    public function showPayslip(Request $request, PayrollBatch $batch, Payslip $payslip): View
+    {
+        $this->ensureTenant($request, $batch);
+        abort_unless($payslip->payroll_batch_id === $batch->id, 404);
+        $payslip->load(['batch.company', 'employee.department']);
+
+        return view('company.payroll.payslip', compact('batch', 'payslip'));
     }
 
     public function approve(Request $request, PayrollBatch $batch): RedirectResponse

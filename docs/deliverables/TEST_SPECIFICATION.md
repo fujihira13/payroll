@@ -1,12 +1,12 @@
 # 給与明細ポータル テスト仕様書
 
-文書版: 1.0  
+文書版: 1.1
 作成日: 2026-08-25  
 対象環境: Docker Composeローカル学習環境
 
 ## 1. 目的
 
-3権限、会社間分離、給与明細の作成から公開・通知・閲覧までが外部設計どおり動作し、異常入力や権限外アクセスでデータを漏えい・破損しないことを確認します。
+`/manage`のシステム管理者、`/login`のpermission 1（一般社員）・9（社員管理者）、会社間分離、給与明細の作成から公開・通知・閲覧までが仕様どおり動作し、異常入力や権限外アクセスでデータを漏えい・破損しないことを確認します。
 
 ## 2. 対象と対象外
 
@@ -14,7 +14,7 @@
 
 - Docker起動、ヘルスチェック、データ保持
 - 認証、ログアウト、権限、会社・本人分離
-- 会社、会社管理者、部署、社員、共通テンプレート、自社設定
+- 会社、permission 1・9の社員、部署、共通テンプレート、自社設定
 - 社員CSV、給与CSV
 - 給与処理、承認、予約公開、通知メール
 - 社員の明細閲覧、PDF、パスワード変更、閲覧記録
@@ -58,16 +58,16 @@
 | ENV-02 | `/health`へアクセス | HTTP 200、`status=ok`、`database=ok` | 自動＋手動 |
 | ENV-03 | DB接続不可の隔離環境で`/health`へアクセス | HTTP 503、`status=error`、`database=error` | 手動 |
 | ENV-04 | `docker compose down`後に再起動 | 登録済み会社・社員・明細が保持される | 手動 |
-| ENV-05 | `payroll:create-system-admin`へ正常値を入力 | 会社に属さない`system_admin`が作成され、ログインできる | 手動 |
+| ENV-05 | `payroll:create-system-admin`へ正常値を入力 | `admins`へ作成され、`/manage`からログインできる | 手動 |
 
 ### 4.2 認証・セッション
 
 | ID | テスト内容／手順 | 期待結果 | 種別 |
 |---|---|---|---|
 | AUT-01 | 未ログインで`/`へアクセス | `/login`へリダイレクトする | 自動 |
-| AUT-02 | 3権限それぞれで正しい認証情報を入力 | ログイン成功し、権限別ダッシュボードを表示する | 手動 |
+| AUT-02 | システム管理者は`/manage`、permission 1・9は`/login`へ正しい認証情報を入力 | それぞれのガードでログインし、権限に合う画面を表示する | 自動＋手動 |
 | AUT-03 | 誤ったパスワードでログイン | 共通エラーを表示し、失敗回数を加算する | 手動 |
-| AUT-04 | 存在しないメールでログイン | AUT-03と同じ文言で拒否し、アカウント存在を漏らさない | 手動 |
+| AUT-04 | 存在しないログインIDでログイン | AUT-03と同等の文言で拒否し、アカウント存在を漏らさない | 手動 |
 | AUT-05 | 無効利用者、論理削除利用者、無効会社の利用者でログイン | ログインを拒否する | 手動 |
 | AUT-06 | 1分以内にログインPOSTを7回実行 | 7回目をレート制限し、1分後に再試行できる | 手動 |
 | AUT-07 | ログアウト後、ブラウザ履歴から保護画面へ戻る | セッションを再利用できず、ログイン画面へ遷移する | 手動 |
@@ -76,13 +76,13 @@
 
 | ID | テスト内容／手順 | 期待結果 | 種別 |
 |---|---|---|---|
-| ACL-01 | システム管理者が`/system/companies`へアクセス | HTTP 200 | 自動 |
+| ACL-01 | システム管理者が`/manage/companies`へアクセス | HTTP 200 | 自動 |
 | ACL-02 | システム管理者が会社管理領域へアクセス | HTTP 403 | 自動 |
-| ACL-03 | 会社管理者が自社社員一覧へアクセス | HTTP 200、自社社員だけ表示 | 自動＋手動 |
-| ACL-04 | 会社管理者がシステム管理領域へアクセス | HTTP 403 | 自動 |
-| ACL-05 | 社員が本人の明細一覧へアクセス | HTTP 200、本人分だけ表示 | 自動＋手動 |
-| ACL-06 | 社員が会社管理領域へアクセス | HTTP 403 | 自動 |
-| ACL-07 | A社管理者がURLでB社社員の編集IDを指定 | HTTP 404、B社情報を表示・更新しない | 自動 |
+| ACL-03 | permission 9の社員管理者が自社社員一覧へアクセス | HTTP 200、自社社員だけ表示 | 自動＋手動 |
+| ACL-04 | permission 9の社員管理者が`/manage`領域へアクセス | 管理者ガードで拒否する | 自動 |
+| ACL-05 | permission 1の一般社員が本人の明細一覧へアクセス | HTTP 200、本人分だけ表示 | 自動＋手動 |
+| ACL-06 | permission 1の一般社員が会社管理領域へアクセス | HTTP 403 | 自動 |
+| ACL-07 | A社のpermission 9利用者がURLでB社社員の編集IDを指定 | HTTP 404、B社情報を表示・更新しない | 自動 |
 | ACL-08 | A社管理者がB社の部署・設定・給与処理IDを直接指定 | HTTP 404、B社データを変更しない | 手動 |
 
 ### 4.4 マスター管理
@@ -92,8 +92,8 @@
 | MST-01 | 会社を正常値で登録・編集 | 一覧・検索・編集内容に反映する | 手動 |
 | MST-02 | 重複会社コード、必須漏れ、不正メールで登録 | 項目エラーを表示し、DBへ登録しない | 手動 |
 | MST-03 | 会社を停止 | 会社と所属利用者が利用不可になり、一覧の扱いが設計どおりになる | 手動 |
-| MST-04 | 会社管理者を正常値で登録・編集 | 指定会社・権限で登録され、ログインできる | 手動 |
-| MST-05 | 重複メール、8文字未満パスワードで会社管理者登録 | 項目エラーを表示し、登録しない | 手動 |
+| MST-04 | 会社登録時に初期社員管理者を正常値で登録 | 同じ会社の社員として`permission=9`で登録され、ログインできる | 自動＋手動 |
+| MST-05 | 社員のpermissionへ1・9以外を指定 | 項目エラーを表示し、登録・更新しない | 自動 |
 | MST-06 | 部署を登録・編集 | 自社内に反映し、他社一覧へ表示しない | 手動 |
 | MST-07 | 同一会社で部署コード重複、他社で同じコード | 同一会社は拒否し、別会社は許可する | 手動 |
 | MST-08 | 所属社員がいる部署を削除 | エラーを表示し、部署を保持する | 手動 |
@@ -156,7 +156,7 @@
 |---|---|---|---|
 | NFR-01 | 主要画面を1440pxと390pxで確認 | 横切れ、操作不能、重大な重なりがない | 手動 |
 | NFR-02 | ChromeとEdgeで主要業務フローを実行 | 同等に操作でき、ダウンロード・フォームが動作する | 手動 |
-| NFR-03 | `php artisan test`を実行 | 全9テスト・28アサーションが成功し、通常DBを変更しない | 自動 |
+| NFR-03 | `php artisan test`を実行 | 全17テスト・62アサーションが成功し、通常DBを変更しない | 自動 |
 | NFR-04 | `composer audit`を実行 | 既知脆弱性を記録し、本番利用不可の注意と差異がない | 手動 |
 
 ## 5. 現在の自動テスト対応表
@@ -166,7 +166,9 @@
 | `ExampleTest::test_health_check_confirms_the_application_and_database` | ENV-02 |
 | `ExampleTest::test_guest_is_redirected_to_login` | AUT-01 |
 | `RoleAndTenantAccessTest::test_each_role_can_only_open_its_own_management_area` | ACL-01～ACL-06 |
-| `RoleAndTenantAccessTest::test_company_admin_cannot_edit_an_employee_from_another_company` | ACL-07 |
+| `RoleAndTenantAccessTest::test_company_manager_cannot_edit_an_employee_from_another_company` | ACL-07 |
+| `CompanyAlignmentFeaturesTest::test_employee_permission_only_accepts_one_or_nine` | permission 1・9の入力制限 |
+| `CompanyAlignmentFeaturesTest::test_employee_csv_imports_permission_nine_and_rejects_other_values` | CSV-01～CSV-04、permission 1・9 |
 | `PayslipWorkflowTest::test_payroll_csv_is_imported_using_company_item_codes` | CSV-06 |
 | `PayslipWorkflowTest::test_scheduled_batch_is_published_and_employee_is_notified` | PAY-07 |
 | `PayslipWorkflowTest::test_employee_can_only_view_published_own_payslip_and_view_is_recorded` | EMP-01 |

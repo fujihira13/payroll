@@ -10,7 +10,7 @@ class CompanyPayslipItem extends Model
 {
     protected $fillable = [
         'company_payslip_setting_id', 'source_template_item_id', 'code', 'label', 'category',
-        'data_type', 'sort_order', 'is_required', 'is_active',
+        'data_type', 'sort_order', 'slot_code', 'is_required', 'is_active',
     ];
 
     protected function casts(): array

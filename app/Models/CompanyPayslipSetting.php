@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CompanyPayslipSetting extends Model
 {
-    protected $fillable = ['company_id', 'payslip_template_id', 'configured_by', 'name', 'is_active'];
+    protected $fillable = ['company_id', 'payslip_template_id', 'configured_by', 'name', 'layout_type', 'is_active'];
 
     protected function casts(): array
     {

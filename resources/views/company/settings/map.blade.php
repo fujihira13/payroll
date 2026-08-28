@@ -1,0 +1,9 @@
+@extends('layouts.app')
+@section('title', '帳票項目割当')
+@section('content')
+<div class="page-header"><div><div class="eyebrow">STEP 2 / 3</div><h1>帳票スロットへ項目を割り当てる</h1><p class="lead">{{ $template->name }}をもとに、表示位置を設定します。</p></div></div>
+<form method="post" action="{{ route('company.settings.confirm') }}">@csrf<input type="hidden" name="payslip_template_id" value="{{ $template->id }}"><input type="hidden" name="name" value="{{ $data['name'] }}"><input type="hidden" name="layout_type" value="{{ $template->layout_type }}">
+<section class="card"><div class="table-wrap"><table><thead><tr><th>項目コード</th><th>表示名</th><th>分類</th><th>スロット</th><th>使用</th></tr></thead><tbody>
+@foreach($template->items as $index=>$item)<tr><td>{{ $item->code }}<input type="hidden" name="items[{{ $index }}][source_template_item_id]" value="{{ $item->id }}"><input type="hidden" name="items[{{ $index }}][code]" value="{{ $item->code }}"><input type="hidden" name="items[{{ $index }}][category]" value="{{ $item->category->value }}"><input type="hidden" name="items[{{ $index }}][data_type]" value="{{ $item->data_type }}"><input type="hidden" name="items[{{ $index }}][is_required]" value="{{ $item->is_required ? 1 : 0 }}"></td><td><input name="items[{{ $index }}][label]" value="{{ $item->label }}" required></td><td>{{ $item->category->label() }}</td><td><select name="items[{{ $index }}][slot_code]"><option value="">未割当</option>@foreach($slots as $code=>$label)<option value="{{ $code }}" @selected($item->slot_code===$code)>{{ $label }}</option>@endforeach</select></td><td><input type="hidden" name="items[{{ $index }}][is_active]" value="0"><input type="checkbox" name="items[{{ $index }}][is_active]" value="1" checked></td></tr>@endforeach
+</tbody></table></div></section><div class="form-actions"><a class="button button-secondary" href="{{ route('company.settings.create') }}">戻る</a><button class="button button-primary">次へ（確認）</button></div></form>
+@endsection

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserPermission;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,10 +24,14 @@ class User extends Authenticatable
         'company_id',
         'department_id',
         'role',
+        'permission',
         'employee_number',
+        'login_id',
         'name',
         'email',
         'password',
+        'force_password_change',
+        'lock_status',
         'is_active',
         'login_failure_count',
         'last_login_at',
@@ -53,6 +58,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'permission' => UserPermission::class,
+            'force_password_change' => 'boolean',
+            'lock_status' => 'boolean',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
         ];
@@ -76,5 +84,10 @@ class User extends Authenticatable
     public function hasRole(UserRole $role): bool
     {
         return $this->role === $role;
+    }
+
+    public function canManageCompany(): bool
+    {
+        return $this->permission?->canManageCompany() ?? false;
     }
 }

@@ -70,6 +70,7 @@ class PayrollCsvImporter
                     'label' => $item->label,
                     'category' => $item->category->value,
                     'data_type' => $item->data_type,
+                    'slot_code' => $item->slot_code,
                     'value' => $normalized,
                 ];
             }

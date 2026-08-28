@@ -1,11 +1,10 @@
-@extends('layouts.app')
-@section('title', '会社管理')
+@extends('layouts.manage')
+@section('title', '企業一覧')
 @section('content')
-<div class="page-header"><div><div class="eyebrow">COMPANIES</div><h1>会社管理</h1><p class="lead">利用会社の登録と稼働状態を管理します。</p></div><a class="button button-primary" href="{{ route('system.companies.create') }}">会社を登録</a></div>
-<div class="card">
-<form class="search" method="get"><input name="q" value="{{ request('q') }}" placeholder="会社名または会社コード"><button class="button button-secondary">検索</button></form>
-<div class="table-wrap" style="margin-top:18px"><table><thead><tr><th>会社コード</th><th>会社名</th><th>利用者数</th><th>状態</th><th></th></tr></thead><tbody>
-@forelse($companies as $company)<tr><td>{{ $company->code }}</td><td><strong>{{ $company->name }}</strong></td><td>{{ $company->users_count }}</td><td><span class="badge {{ $company->is_active ? 'badge-success' : 'badge-muted' }}">{{ $company->is_active ? '利用中' : '停止中' }}</span></td><td><div class="actions"><a class="button button-secondary button-small" href="{{ route('system.companies.edit', $company) }}">編集</a><form method="post" action="{{ route('system.companies.destroy', $company) }}" onsubmit="return confirm('会社を停止しますか？')">@csrf @method('delete')<button class="button button-danger button-small">停止</button></form></div></td></tr>
-@empty<tr><td colspan="5" class="empty">会社がまだ登録されていません。</td></tr>@endforelse
+<div class="page-header"><div><div class="eyebrow">COMPANIES</div><h1>企業一覧</h1><p class="lead">利用企業と専用ログインURLを管理します。</p></div><a class="button button-primary" href="{{ route('manage.companies.create') }}">企業を登録</a></div>
+<div class="card"><form class="search" method="get"><input name="q" value="{{ request('q') }}" placeholder="企業名または企業コード"><button class="button button-secondary">検索</button></form>
+<div class="table-wrap" style="margin-top:18px"><table><thead><tr><th>企業コード</th><th>企業名</th><th>企業ログインURL</th><th>利用者数</th><th>状態</th><th></th></tr></thead><tbody>
+@forelse($companies as $company)<tr><td>{{ $company->code }}</td><td><strong>{{ $company->name }}</strong></td><td><a href="{{ route('company.login', $company->loginIdentifier()) }}" target="_blank">{{ route('company.login', $company->loginIdentifier()) }}</a></td><td>{{ $company->users_count }}</td><td><span class="badge {{ $company->is_active ? 'badge-success' : 'badge-muted' }}">{{ $company->is_active ? '利用中' : '停止中' }}</span></td><td><div class="actions"><a class="button button-secondary button-small" href="{{ route('manage.companies.edit', $company) }}">編集</a><form method="post" action="{{ route('manage.companies.destroy', $company) }}" onsubmit="return confirm('企業を停止しますか？')">@csrf @method('delete')<button class="button button-danger button-small">停止</button></form></div></td></tr>
+@empty<tr><td colspan="6" class="empty">企業がまだ登録されていません。</td></tr>@endforelse
 </tbody></table></div><x-pagination :paginator="$companies" /></div>
 @endsection

@@ -62,6 +62,7 @@ class DepartmentController extends Controller
         return $request->validate([
             'code' => ['required', 'alpha_dash', 'max:30', Rule::unique('departments')->where('company_id', $request->user()->company_id)->ignore($department)],
             'name' => ['required', 'string', 'max:255'],
+            'name_kana' => ['nullable', 'string', 'max:255'],
         ]);
     }
 

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\System;
 
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\Company;
-use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -15,11 +14,10 @@ class AdministratorController extends Controller
 {
     public function index(Request $request): View
     {
-        $administrators = User::where('role', UserRole::CompanyAdmin)
-            ->with('company')
+        $administrators = Admin::query()
             ->when($request->string('q')->isNotEmpty(), fn ($query) => $query->where(fn ($inner) => $inner
                 ->where('name', 'like', '%'.$request->q.'%')
-                ->orWhere('email', 'like', '%'.$request->q.'%')))
+                ->orWhere('login_id', 'like', '%'.$request->q.'%')))
             ->latest()->paginate(15)->withQueryString();
 
         return view('system.administrators.index', compact('administrators'));
@@ -27,62 +25,96 @@ class AdministratorController extends Controller
 
     public function create(): View
     {
-        return view('system.administrators.form', [
-            'administrator' => new User,
-            'companies' => Company::where('is_active', true)->orderBy('name')->get(),
-        ]);
+        return view('system.administrators.form', ['administrator' => new Admin]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $this->validated($request);
-        $data['role'] = UserRole::CompanyAdmin;
-        User::create($data);
-
-        return redirect()->route('system.administrators.index')->with('success', '会社管理者を登録しました。');
-    }
-
-    public function edit(User $administrator): View
-    {
-        abort_unless($administrator->hasRole(UserRole::CompanyAdmin), 404);
-
-        return view('system.administrators.form', [
-            'administrator' => $administrator,
-            'companies' => Company::where('is_active', true)->orderBy('name')->get(),
+        $temporaryPassword = $this->temporaryPassword();
+        Admin::create($this->validated($request) + [
+            'password' => $temporaryPassword,
+            'force_password_change' => true,
+            'is_active' => true,
         ]);
+
+        return redirect()->route('manage.admins.index')->with('success', 'システム管理者を登録しました。')
+            ->with('temporary_password', $temporaryPassword);
     }
 
-    public function update(Request $request, User $administrator): RedirectResponse
+    public function edit(Admin $administrator): View
     {
-        abort_unless($administrator->hasRole(UserRole::CompanyAdmin), 404);
-        $administrator->update($this->validated($request, $administrator));
-
-        return redirect()->route('system.administrators.index')->with('success', '会社管理者を更新しました。');
+        return view('system.administrators.form', compact('administrator'));
     }
 
-    public function destroy(User $administrator): RedirectResponse
+    public function update(Request $request, Admin $administrator): RedirectResponse
     {
-        abort_unless($administrator->hasRole(UserRole::CompanyAdmin), 404);
+        $data = $this->validated($request, $administrator);
+        if ($administrator->is(auth('admin')->user()) && ! (bool) $data['is_active']) {
+            return back()->withErrors(['is_active' => '自分自身を利用停止にはできません。'])->withInput();
+        }
+        $administrator->update($data);
+
+        return redirect()->route('manage.admins.index')->with('success', 'システム管理者を更新しました。');
+    }
+
+    public function resetPassword(Admin $administrator): RedirectResponse
+    {
+        $temporaryPassword = $this->temporaryPassword();
+        $administrator->update([
+            'password' => $temporaryPassword,
+            'force_password_change' => true,
+            'lock_status' => false,
+            'try_count' => 0,
+            'is_active' => true,
+        ]);
+
+        return back()->with('success', '仮パスワードを再発行し、ロックを解除しました。')
+            ->with('temporary_password', $temporaryPassword);
+    }
+
+    public function unlock(Admin $administrator): RedirectResponse
+    {
+        $administrator->update(['lock_status' => false, 'try_count' => 0]);
+
+        return back()->with('success', 'アカウントのロックを解除しました。');
+    }
+
+    public function destroy(Admin $administrator): RedirectResponse
+    {
+        if ($administrator->is(auth('admin')->user())) {
+            return back()->withErrors(['administrator' => '自分自身は削除できません。']);
+        }
+        if ($administrator->is_active && Admin::where('is_active', true)->count() <= 1) {
+            return back()->withErrors(['administrator' => '最後の有効なシステム管理者は削除できません。']);
+        }
         $administrator->update(['is_active' => false]);
         $administrator->delete();
 
-        return back()->with('success', '会社管理者を停止しました。');
+        return back()->with('success', 'システム管理者を停止しました。');
     }
 
-    private function validated(Request $request, ?User $user = null): array
+    private function validated(Request $request, ?Admin $administrator = null): array
     {
-        $rules = [
-            'company_id' => ['required', 'exists:companies,id'],
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', Rule::unique('users')->ignore($user)],
-            'password' => [$user ? 'nullable' : 'required', 'string', 'min:8'],
-            'is_active' => ['required', 'boolean'],
+        $loginIdRules = [
+            'required',
+            'string',
+            'min:4',
+            $administrator && $request->input('login_id') === $administrator->login_id ? 'max:255' : 'max:20',
+            Rule::unique('admins')->ignore($administrator),
         ];
-        $data = $request->validate($rules);
-        if (blank($data['password'] ?? null)) {
-            unset($data['password']);
+        if (! $administrator || $request->input('login_id') !== $administrator->login_id) {
+            $loginIdRules[] = 'alpha_dash:ascii';
         }
 
-        return $data;
+        return $request->validate([
+            'login_id' => $loginIdRules,
+            'name' => ['required', 'string', 'max:40'],
+            'is_active' => [$administrator ? 'required' : 'nullable', 'boolean'],
+        ]);
+    }
+
+    private function temporaryPassword(): string
+    {
+        return Str::password(12, symbols: false);
     }
 }
